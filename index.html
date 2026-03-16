@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube 자동화 플랫폼</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#eef0f8;--surf:#fff;--surf2:#f4f5fb;--surf3:#e8eaf3;
+  --border:#dde0ef;--text:#1a1d2e;--text2:#6b7080;--r:13px;
+  --sh:0 2px 8px rgba(60,60,140,.08);--sh2:0 8px 28px rgba(60,60,140,.14);
+  /* 스텝 컬러 팔레트 */
+  --cs:#5b50e8;  /* 설정 — 인디고 */
+  --c0:#0891b2;  /* Step 0 — 시안 */
+  --c1:#7c3aed;  /* Step 1 — 바이올렛 */
+  --c2:#ea580c;  /* Step 2 — 오렌지 */
+  --c3:#db2777;  /* Step 3 — 핑크 */
+  --c4:#059669;  /* Step 4 — 에메랄드 */
+  --c5:#2563eb;  /* Step 5 — 블루 */
+  --c6:#7e22ce;  /* Step 6 — 퍼플 */
+  --c7:#dc2626;  /* Step 7 — 레드 */
+  --accent:#5b50e8;--green:#059669;--yellow:#d97706;--red:#dc2626;
+}
+*{scrollbar-width:thin;scrollbar-color:#c5c8e0 transparent}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:#c5c8e0;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#9fa6d0}
+body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;
+  background-image:radial-gradient(circle,#c8cadf 1px,transparent 1px);background-size:22px 22px}
+
+/* ── 헤더 ── */
+.hdr{background:linear-gradient(135deg,#1e1878 0%,#5b50e8 55%,#8b5cf6 100%);border-bottom:none;position:sticky;top:0;z-index:200;box-shadow:0 4px 20px rgba(91,80,232,.38)}
+.hdr-in{max-width:1500px;margin:0 auto;padding:0 1.5rem;height:58px;display:flex;align-items:center;gap:1rem}
+.logo{display:flex;align-items:center;gap:.55rem;font-size:1.05rem;font-weight:800;margin-right:auto;color:#fff;letter-spacing:-.02em;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+.logo-icon{font-size:1.4rem}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(255,100,100,.8);border:2px solid rgba(255,255,255,.4);transition:background .3s}
+.dot.ok{background:#3df0a0}
+.dot-label{font-size:.75rem;color:rgba(255,255,255,.75);font-weight:500}
+.hdr-btn{padding:.42rem 1rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.13);color:#fff;font-size:.8rem;cursor:pointer;transition:all .2s;font-weight:600;backdrop-filter:blur(4px)}
+.hdr-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.6)}
+
+/* ── 레이아웃 ── */
+.wrap{flex:1;display:flex;max-width:1500px;margin:0 auto;width:100%;padding:1.5rem;gap:1.4rem}
+
+/* ── 사이드바 ── */
+.sidebar{width:206px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem}
+.snav{display:flex;flex-direction:column;gap:.2rem;background:#fff;border-radius:var(--r);padding:.6rem;border:1.5px solid var(--border);box-shadow:var(--sh)}
+.sbtn{width:100%;background:transparent;border:1.5px solid transparent;border-radius:10px;padding:.62rem .9rem;display:flex;align-items:center;gap:.65rem;cursor:pointer;color:var(--text2);transition:all .18s;text-align:left}
+.sbtn:hover{background:var(--surf2);border-color:var(--border);color:var(--text)}
+/* 기본 활성 */
+.sbtn.on{background:rgba(91,80,232,.1);border-color:rgba(91,80,232,.28);color:var(--cs)}
+/* 스텝별 활성 색상 */
+.sbtn[data-p="pSettings"].on{background:rgba(91,80,232,.1);border-color:rgba(91,80,232,.28);color:var(--cs)}
+.sbtn[data-p="p0"].on{background:rgba(8,145,178,.1);border-color:rgba(8,145,178,.28);color:var(--c0)}
+.sbtn[data-p="p1"].on{background:rgba(124,58,237,.1);border-color:rgba(124,58,237,.28);color:var(--c1)}
+.sbtn[data-p="p2"].on{background:rgba(234,88,12,.1);border-color:rgba(234,88,12,.28);color:var(--c2)}
+.sbtn[data-p="p3"].on{background:rgba(219,39,119,.1);border-color:rgba(219,39,119,.28);color:var(--c3)}
+.sbtn[data-p="p4"].on{background:rgba(5,150,105,.1);border-color:rgba(5,150,105,.28);color:var(--c4)}
+.sbtn[data-p="p5"].on{background:rgba(37,99,235,.1);border-color:rgba(37,99,235,.28);color:var(--c5)}
+.sbtn[data-p="p6"].on{background:rgba(126,34,206,.1);border-color:rgba(126,34,206,.28);color:var(--c6)}
+.sbtn[data-p="p7"].on{background:rgba(220,38,38,.1);border-color:rgba(220,38,38,.28);color:var(--c7)}
+.snum{width:24px;height:24px;border-radius:8px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;flex-shrink:0}
+.sbtn.on .snum{background:currentColor;border-color:currentColor;color:#fff}
+.slabel{font-size:.83rem;font-weight:600}
+.sdiv{height:1px;background:var(--border);margin:.28rem .1rem}
+
+/* 출력 목록 */
+.obox{background:#fff;border:1.5px solid var(--border);border-top:3px solid var(--cs);border-radius:var(--r);padding:.9rem;flex:1;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh)}
+.obox-t{font-size:.72rem;font-weight:800;color:var(--cs);margin-bottom:.55rem;letter-spacing:.05em;text-transform:uppercase}
+.olist{display:flex;flex-direction:column;gap:.22rem;overflow-y:auto;flex:1}
+.oitem{font-size:.72rem;color:var(--text2);padding:.4rem .65rem;border-radius:7px;cursor:pointer;border:1.5px solid transparent;transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+.oitem:hover{background:var(--surf2);color:var(--text);border-color:var(--border)}
+.oitem.sel{background:rgba(91,80,232,.08);border-color:rgba(91,80,232,.25);color:var(--cs);font-weight:700}
+
+/* ── 콘텐츠 ── */
+.content{flex:1;min-width:0;display:flex;flex-direction:column;gap:1.1rem}
+.panel{display:none;flex-direction:column;gap:1.1rem}.panel.on{display:flex}
+
+/* ── 카드 기본 ── */
+.card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);transition:box-shadow .2s}
+.card:hover{box-shadow:var(--sh2)}
+.card-hdr{padding:.92rem 1.3rem;border-bottom:1.5px solid var(--border);display:flex;align-items:center;gap:.65rem}
+.card-hdr h2{font-size:.97rem;font-weight:700;color:var(--text)}
+.card-hdr p{font-size:.73rem;color:#fff;margin-left:auto;padding:.2rem .75rem;border-radius:20px;font-weight:700;letter-spacing:.03em}
+.card-body{padding:1.25rem;display:flex;flex-direction:column;gap:.9rem}
+
+/* ── 스텝별 카드 상단 컬러 테두리 + 헤더 배경 + 배지 색상 ── */
+#pSettings .card{border-top:3px solid var(--cs)}
+#pSettings .card-hdr{background:linear-gradient(135deg,rgba(91,80,232,.06),rgba(139,92,246,.03))}
+#pSettings .card-hdr p{background:var(--cs)}
+#p0 .card{border-top:3px solid var(--c0)}
+#p0 .card-hdr{background:linear-gradient(135deg,rgba(8,145,178,.06),rgba(6,182,212,.03))}
+#p0 .card-hdr p{background:var(--c0)}
+#p0 .btn-p{background:linear-gradient(135deg,var(--c0),#22d3ee);box-shadow:0 2px 10px rgba(8,145,178,.3)}
+#p0 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(8,145,178,.42);transform:translateY(-1px)}
+#p1 .card{border-top:3px solid var(--c1)}
+#p1 .card-hdr{background:linear-gradient(135deg,rgba(124,58,237,.06),rgba(167,139,250,.03))}
+#p1 .card-hdr p{background:var(--c1)}
+#p1 .btn-p{background:linear-gradient(135deg,var(--c1),#a855f7);box-shadow:0 2px 10px rgba(124,58,237,.3)}
+#p1 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(124,58,237,.42);transform:translateY(-1px)}
+#p2 .card{border-top:3px solid var(--c2)}
+#p2 .card-hdr{background:linear-gradient(135deg,rgba(234,88,12,.06),rgba(251,146,60,.03))}
+#p2 .card-hdr p{background:var(--c2)}
+#p2 .btn-p{background:linear-gradient(135deg,var(--c2),#fb923c);box-shadow:0 2px 10px rgba(234,88,12,.3)}
+#p2 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(234,88,12,.42);transform:translateY(-1px)}
+#p3 .card{border-top:3px solid var(--c3)}
+#p3 .card-hdr{background:linear-gradient(135deg,rgba(219,39,119,.06),rgba(244,114,182,.03))}
+#p3 .card-hdr p{background:var(--c3)}
+#p3 .btn-p{background:linear-gradient(135deg,var(--c3),#f472b6);box-shadow:0 2px 10px rgba(219,39,119,.3)}
+#p3 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(219,39,119,.42);transform:translateY(-1px)}
+#p4 .card{border-top:3px solid var(--c4)}
+#p4 .card-hdr{background:linear-gradient(135deg,rgba(5,150,105,.06),rgba(52,211,153,.03))}
+#p4 .card-hdr p{background:var(--c4)}
+#p5 .card{border-top:3px solid var(--c5)}
+#p5 .card-hdr{background:linear-gradient(135deg,rgba(37,99,235,.06),rgba(96,165,250,.03))}
+#p5 .card-hdr p{background:var(--c5)}
+#p5 .btn-p{background:linear-gradient(135deg,var(--c5),#60a5fa);box-shadow:0 2px 10px rgba(37,99,235,.3)}
+#p5 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(37,99,235,.42);transform:translateY(-1px)}
+#p6 .card{border-top:3px solid var(--c6)}
+#p6 .card-hdr{background:linear-gradient(135deg,rgba(126,34,206,.06),rgba(192,132,252,.03))}
+#p6 .card-hdr p{background:var(--c6)}
+#p6 .btn-p{background:linear-gradient(135deg,var(--c6),#c084fc);box-shadow:0 2px 10px rgba(126,34,206,.3)}
+#p6 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(126,34,206,.42);transform:translateY(-1px)}
+#p7 .card{border-top:3px solid var(--c7)}
+#p7 .card-hdr{background:linear-gradient(135deg,rgba(220,38,38,.06),rgba(252,165,165,.03))}
+#p7 .card-hdr p{background:var(--c7)}
+#p7 .btn-p{background:linear-gradient(135deg,var(--c7),#f87171);box-shadow:0 2px 10px rgba(220,38,38,.3)}
+#p7 .btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(220,38,38,.42);transform:translateY(-1px)}
+
+/* ── 폼 ── */
+.fg{display:flex;flex-direction:column;gap:.32rem}
+.fg label{font-size:.73rem;font-weight:800;color:var(--text2);letter-spacing:.04em;text-transform:uppercase}
+.row{display:flex;gap:.8rem;flex-wrap:wrap}
+.row .fg{flex:1;min-width:140px}
+input[type=text],input[type=password],select,textarea{
+  width:100%;background:#fff;border:1.5px solid var(--border);
+  border-radius:8px;padding:.55rem .88rem;color:var(--text);font-size:.87rem;
+  outline:none;transition:all .2s;font-family:inherit;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.04)}
+input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(91,80,232,.11)}
+.eye-wrap{position:relative}
+.eye-wrap input{padding-right:2.2rem}
+.eye-btn{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text2);cursor:pointer;font-size:.85rem;padding:0}
+.chk-row{display:flex;align-items:center;gap:.5rem;font-size:.86rem;cursor:pointer;font-weight:600}
+.chk-row input{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+
+/* ── 버튼 ── */
+.btn{padding:.6rem 1.3rem;border-radius:9px;border:none;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;letter-spacing:-.01em}
+.btn:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none!important}
+.btn-p{background:linear-gradient(135deg,var(--cs),#8b5cf6);color:#fff;box-shadow:0 2px 10px rgba(91,80,232,.32)}
+.btn-p:hover:not(:disabled){box-shadow:0 5px 18px rgba(91,80,232,.42);transform:translateY(-1px)}
+.btn-s{background:#fff;color:var(--text);border:1.5px solid var(--border);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.btn-s:hover:not(:disabled){border-color:#9fa6d0;color:var(--accent);background:var(--surf2);transform:translateY(-1px)}
+.btn-g{background:linear-gradient(135deg,rgba(5,150,105,.1),rgba(16,185,129,.07));color:var(--green);border:1.5px solid rgba(5,150,105,.28)}
+.btn-g:hover:not(:disabled){background:rgba(5,150,105,.17);transform:translateY(-1px)}
+.btn-r{background:rgba(220,38,38,.08);color:var(--red);border:1.5px solid rgba(220,38,38,.25)}
+.btn-r:hover:not(:disabled){background:rgba(220,38,38,.14)}
+.btn-icon{background:var(--surf2);border:1.5px solid var(--border);color:var(--text2);padding:.38rem .72rem;font-size:.78rem;border-radius:7px;cursor:pointer;transition:all .15s;font-weight:600}
+.btn-icon:hover{border-color:#9fa6d0;color:var(--accent);background:var(--surf3);transform:translateY(-1px)}
+
+/* ── 로그 ── */
+.log{background:linear-gradient(135deg,#f0f4ff,#f8f9ff);border:1.5px solid #c7d2fe;border-left:4px solid var(--c1);border-radius:var(--r);padding:1rem 1.2rem;font-family:Consolas,'Courier New',monospace;font-size:.79rem;color:#3730a3;white-space:pre-wrap;max-height:260px;overflow-y:auto;line-height:1.65}
+.log .err{color:var(--red)}
+.status-row{display:flex;align-items:center;gap:.7rem}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid #c7d2fe;border-top-color:var(--cs);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tag{font-size:.72rem;padding:.22rem .62rem;border-radius:20px;font-weight:800;letter-spacing:.03em}
+.tag-run{background:rgba(91,80,232,.11);color:var(--cs);border:1px solid rgba(91,80,232,.2)}
+.tag-ok{background:rgba(5,150,105,.11);color:var(--green);border:1px solid rgba(5,150,105,.2)}
+.tag-err{background:rgba(220,38,38,.11);color:var(--red);border:1px solid rgba(220,38,38,.2)}
+
+/* ── 탭 ── */
+.tabs{display:flex;border-bottom:1.5px solid var(--border);background:var(--surf2);padding:.2rem .5rem 0}
+.tbtn{padding:.56rem 1.05rem;background:none;border:none;color:var(--text2);font-size:.81rem;font-weight:700;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;margin-bottom:-1.5px;border-radius:8px 8px 0 0}
+.tbtn.on{color:var(--accent);border-bottom-color:var(--accent);background:rgba(91,80,232,.06)}
+.tbtn:hover{color:var(--text);background:var(--surf3)}
+#p1 .tbtn.on{color:var(--c1);border-bottom-color:var(--c1);background:rgba(124,58,237,.06)}
+#p2 .tbtn.on{color:var(--c2);border-bottom-color:var(--c2);background:rgba(234,88,12,.06)}
+#p3 .tbtn.on{color:var(--c3);border-bottom-color:var(--c3);background:rgba(219,39,119,.06)}
+#p4 .tbtn.on{color:var(--c4);border-bottom-color:var(--c4);background:rgba(5,150,105,.06)}
+#p5 .tbtn.on{color:var(--c5);border-bottom-color:var(--c5);background:rgba(37,99,235,.06)}
+.tc{display:none;padding:1.2rem}.tc.on{display:block}
+
+/* ── 콘텐츠 영역 ── */
+.ca{background:var(--surf2);border-radius:8px;padding:.92rem 1.05rem;font-size:.85rem;line-height:1.8;white-space:pre-wrap;min-height:60px;border:1.5px solid var(--border)}
+.cedit{width:100%;background:#fff;border:1.5px solid var(--border);border-radius:8px;padding:.92rem 1.05rem;color:var(--text);font-size:.85rem;line-height:1.8;min-height:380px;resize:vertical;outline:none;font-family:inherit;transition:all .2s}
+.cedit:focus{border-color:var(--c1);box-shadow:0 0 0 3px rgba(124,58,237,.1)}
+
+/* ── 프롬프트 카드 ── */
+.pcards{display:flex;flex-direction:column;gap:.7rem}
+.pcard{background:#fff;border:1.5px solid var(--border);border-left:4px solid var(--c3);border-radius:var(--r);padding:.9rem 1.1rem;display:flex;gap:.9rem;transition:all .2s}
+.pcard:hover{box-shadow:var(--sh2);transform:translateX(2px)}
+.pnum{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--c3),#f472b6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.71rem;font-weight:800;flex-shrink:0;margin-top:.1rem;box-shadow:0 2px 6px rgba(219,39,119,.28)}
+.pbody{flex:1;min-width:0}
+.pko{font-size:.78rem;color:var(--text2);margin-bottom:.4rem;font-weight:600}
+.pen{font-size:.8rem;color:var(--text);line-height:1.55;font-family:Consolas,monospace;background:linear-gradient(135deg,#fdf4ff,#fce7f3);padding:.55rem .8rem;border-radius:7px;margin-bottom:.5rem;word-break:break-all;border:1.5px solid #fbcfe8}
+
+/* ── 메타 그리드 ── */
+.mgrid{display:flex;flex-direction:column;gap:.9rem}
+.mlbl{font-size:.72rem;font-weight:800;color:var(--c2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.3rem}
+
+/* ── 도구 링크 ── */
+.tlinks{display:flex;gap:.7rem;flex-wrap:wrap}
+.tlink{padding:.5rem 1rem;background:#fff;border:1.5px solid var(--border);border-radius:9px;color:var(--text);text-decoration:none;font-size:.82rem;font-weight:700;transition:all .2s;box-shadow:var(--sh)}
+.tlink:hover{border-color:#9fa6d0;color:var(--accent);background:rgba(91,80,232,.04);transform:translateY(-1px);box-shadow:var(--sh2)}
+
+/* ── 설정 패널 ── */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:700px){.settings-grid{grid-template-columns:1fr}}
+.key-status{font-size:.74rem;margin-top:.3rem;display:flex;align-items:center;gap:.3rem;font-weight:700}
+.key-status.ok{color:var(--green)}.key-status.no{color:var(--red)}
+
+/* ── 마크다운 ── */
+.md h2{font-size:.97rem;color:var(--c4);margin:1rem 0 .35rem;font-weight:800}
+.md h3{font-size:.88rem;color:var(--c2);margin:.8rem 0 .3rem;font-weight:700}
+.md table{width:100%;border-collapse:collapse;margin:.7rem 0;font-size:.8rem}
+.md th{background:rgba(5,150,105,.07);padding:.45rem .7rem;border:1.5px solid var(--border);text-align:left;font-weight:800;color:var(--c4)}
+.md td{padding:.4rem .7rem;border:1.5px solid var(--border)}
+.md tr:nth-child(even) td{background:var(--surf2)}
+.md code{background:linear-gradient(135deg,#ede9fe,#f3e8ff);border:1px solid #ddd6fe;padding:.1rem .35rem;border-radius:5px;font-size:.78rem;font-family:Consolas,monospace;color:var(--c1)}
+.md ul,.md ol{padding-left:1.3rem;font-size:.85rem;line-height:1.8}
+.md hr{border:none;border-top:1.5px solid var(--border);margin:.9rem 0}
+.md strong{color:var(--text);font-weight:700}
+
+/* ── 토스트 ── */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:#fff;border:1.5px solid var(--green);color:var(--green);padding:.68rem 1.35rem;border-radius:12px;font-size:.85rem;font-weight:800;opacity:0;transform:translateY(8px);transition:all .25s;pointer-events:none;z-index:999;box-shadow:0 6px 22px rgba(5,150,105,.2)}
+#toast.show{opacity:1;transform:translateY(0)}
+
+/* ── 빈 상태 ── */
+.empty{text-align:center;padding:2rem;color:var(--text2);font-size:.88rem}
+.hidden{display:none!important}
+
+/* ── 매뉴얼 ── */
+#pManual .card{border-top:3px solid #0f766e}
+#pManual .card-hdr{background:linear-gradient(135deg,rgba(15,118,110,.07),rgba(20,184,166,.03))}
+#pManual .card-hdr p{background:#0f766e}
+.sbtn[data-p="pManual"].on{background:rgba(15,118,110,.1);border-color:rgba(15,118,110,.28);color:#0f766e}
+.man-hero{background:linear-gradient(135deg,#1e1878,#5b50e8,#8b5cf6);border-radius:var(--r);padding:2rem 1.8rem;color:#fff;margin-bottom:.2rem}
+.man-hero h1{font-size:1.5rem;font-weight:800;margin-bottom:.4rem;letter-spacing:-.03em}
+.man-hero p{font-size:.88rem;opacity:.82;line-height:1.7}
+.man-flow{display:flex;flex-wrap:wrap;gap:.7rem;margin:.5rem 0}
+.man-step{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:.75rem 1rem;display:flex;align-items:center;gap:.6rem;min-width:130px;flex:1;box-shadow:var(--sh);transition:all .2s}
+.man-step:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+.man-step-num{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:800;color:#fff;flex-shrink:0}
+.man-step-txt{font-size:.78rem;font-weight:700;color:var(--text);line-height:1.3}
+.man-step-sub{font-size:.68rem;color:var(--text2);font-weight:500}
+.man-arr{color:var(--text2);font-size:1.1rem;align-self:center;flex-shrink:0}
+.man-sec{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:800px){.man-sec{grid-template-columns:1fr}}
+.man-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.man-card-hdr{padding:.75rem 1rem;display:flex;align-items:center;gap:.55rem;border-bottom:1.5px solid var(--border)}
+.man-card-hdr .mc-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.man-card-hdr h3{font-size:.88rem;font-weight:800;color:var(--text)}
+.man-card-hdr span{font-size:.71rem;color:#fff;padding:.15rem .55rem;border-radius:12px;font-weight:700;margin-left:auto}
+.man-card-body{padding:.95rem 1rem}
+.man-list{display:flex;flex-direction:column;gap:.55rem}
+.man-item{display:flex;gap:.65rem;align-items:flex-start}
+.man-item-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0;margin-top:.42rem}
+.man-item-txt{font-size:.81rem;line-height:1.65;color:var(--text)}
+.man-item-txt strong{font-weight:700}
+.man-item-txt code{background:var(--surf2);border:1px solid var(--border);padding:.05rem .3rem;border-radius:4px;font-size:.76rem;font-family:Consolas,monospace;color:var(--c1)}
+.man-tip{background:linear-gradient(135deg,rgba(91,80,232,.06),rgba(139,92,246,.03));border:1.5px solid rgba(91,80,232,.18);border-radius:10px;padding:.85rem 1rem;font-size:.81rem;line-height:1.7;color:var(--text)}
+.man-tip strong{color:var(--cs);font-weight:800}
+.man-qa{display:flex;flex-direction:column;gap:.7rem}
+.man-q{background:var(--surf2);border:1.5px solid var(--border);border-radius:10px;padding:.85rem 1rem}
+.man-q-t{font-size:.82rem;font-weight:800;color:var(--text);margin-bottom:.4rem;display:flex;gap:.5rem}
+.man-q-t::before{content:'Q.';color:var(--cs);font-weight:800;flex-shrink:0}
+.man-q-a{font-size:.8rem;line-height:1.7;color:var(--text2);padding-left:1.3rem}
+.man-api{display:flex;flex-direction:column;gap:.5rem}
+.man-api-row{display:flex;align-items:center;gap:.7rem;padding:.65rem .9rem;background:#fff;border:1.5px solid var(--border);border-radius:9px}
+.man-api-badge{font-size:.7rem;font-weight:800;color:#fff;padding:.18rem .6rem;border-radius:12px;white-space:nowrap;flex-shrink:0}
+.man-api-info{flex:1;min-width:0}
+.man-api-name{font-size:.8rem;font-weight:700;color:var(--text)}
+.man-api-desc{font-size:.72rem;color:var(--text2)}
+</style>
+</head>
+<body>
+<div id="toast"></div>
+
+<!-- 헤더 -->
+<header class="hdr">
+  <div class="hdr-in">
+    <div class="logo"><span class="logo-icon">🎬</span> YouTube 자동화 플랫폼</div>
+    <div class="dot" id="dot"></div>
+    <span class="dot-label" id="dot-label">연결 중...</span>
+    <button class="hdr-btn" id="settingsBtn" onclick="goSettings()">⚙️ API 설정</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- 사이드바 -->
+  <aside class="sidebar">
+    <nav class="snav">
+      <button class="sbtn" data-p="pSettings" onclick="goSettings()">
+        <span class="snum">⚙</span><span class="slabel">API 설정</span>
+      </button>
+      <div class="sdiv"></div>
+      <button class="sbtn" data-p="p0" onclick="goPanel('p0',this)">
+        <span class="snum">0</span><span class="slabel">리서치</span>
+      </button>
+      <button class="sbtn" data-p="p1" onclick="goPanel('p1',this)">
+        <span class="snum">1</span><span class="slabel">대본 생성</span>
+      </button>
+      <button class="sbtn" data-p="p2" onclick="goPanel('p2',this)">
+        <span class="snum">2</span><span class="slabel">재료 생성</span>
+      </button>
+      <button class="sbtn" data-p="p3" onclick="goPanel('p3',this)">
+        <span class="snum">3</span><span class="slabel">이미지</span>
+      </button>
+      <button class="sbtn" data-p="p4" onclick="goPanel('p4',this)">
+        <span class="snum">4</span><span class="slabel">Vrew 편집</span>
+      </button>
+      <button class="sbtn" data-p="p5" onclick="goPanel('p5',this)">
+        <span class="snum">5</span><span class="slabel">블로그</span>
+      </button>
+      <div class="sdiv"></div>
+      <button class="sbtn" data-p="p6" onclick="goPanel('p6',this)">
+        <span class="snum">6</span><span class="slabel">영상 빌드</span>
+      </button>
+      <button class="sbtn" data-p="p7" onclick="goPanel('p7',this)">
+        <span class="snum">7</span><span class="slabel">YouTube 업로드</span>
+      </button>
+      <div class="sdiv"></div>
+      <button class="sbtn" data-p="pManual" onclick="goPanel('pManual',this)">
+        <span class="snum">📖</span><span class="slabel">매뉴얼</span>
+      </button>
+    </nav>
+    <div class="obox">
+      <div class="obox-t">📁 생성 목록</div>
+      <div class="olist" id="olist"><div class="empty">없음</div></div>
+    </div>
+  </aside>
+
+  <!-- 콘텐츠 -->
+  <section class="content">
+
+    <!-- ⚙️ API 설정 -->
+    <div id="pSettings" class="panel">
+      <div class="card">
+        <div class="card-hdr">
+          <h2>⚙️ API 키 설정</h2>
+          <p>키는 config/settings.yaml에 저장됩니다</p>
+        </div>
+        <div class="card-body">
+          <div class="settings-grid">
+            <div class="fg">
+              <label>🤖 Anthropic API Key <span style="color:var(--red)">*</span></label>
+              <div class="eye-wrap">
+                <input type="password" id="k-anthropic" placeholder="sk-ant-...">
+                <button class="eye-btn" onclick="toggleEye('k-anthropic',this)">👁</button>
+              </div>
+              <div class="key-status" id="ks-anthropic"></div>
+              <div style="font-size:.72rem;color:var(--text2);margin-top:.2rem">대본·재료·블로그 생성에 사용</div>
+            </div>
+            <div class="fg">
+              <label>✨ Gemini API Key</label>
+              <div class="eye-wrap">
+                <input type="password" id="k-gemini" placeholder="AIzaSy...">
+                <button class="eye-btn" onclick="toggleEye('k-gemini',this)">👁</button>
+              </div>
+              <div class="key-status" id="ks-gemini"></div>
+              <div style="font-size:.72rem;color:var(--text2);margin-top:.2rem">Step 0 경쟁 영상 리서치에 사용</div>
+            </div>
+            <div class="fg">
+              <label>🎙️ ElevenLabs API Key <span style="color:var(--text2)">(선택)</span></label>
+              <div class="eye-wrap">
+                <input type="password" id="k-elevenlabs" placeholder="ElevenLabs key...">
+                <button class="eye-btn" onclick="toggleEye('k-elevenlabs',this)">👁</button>
+              </div>
+              <div class="key-status" id="ks-elevenlabs"></div>
+              <div style="font-size:.72rem;color:var(--text2);margin-top:.2rem">음성 자동 생성에 사용 (없으면 건너뜀)</div>
+            </div>
+            <div class="fg">
+              <label>🤖 Claude 모델</label>
+              <select id="k-model">
+                <option value="claude-sonnet-4-6">claude-sonnet-4-6 (권장)</option>
+                <option value="claude-opus-4-6">claude-opus-4-6</option>
+                <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (빠름)</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label>🎨 콘텐츠 톤</label>
+              <input type="text" id="k-tone" placeholder="따뜻하고 감성적인">
+            </div>
+            <div class="fg">
+              <label>👥 타겟 시청자</label>
+              <input type="text" id="k-audience" placeholder="30-60대 감성 콘텐츠 시청자">
+            </div>
+          </div>
+          <div style="margin-top:1.2rem;display:flex;gap:.7rem">
+            <button class="btn btn-p" onclick="saveSettings()">💾 저장</button>
+            <button class="btn btn-s" onclick="loadSettings()">↺ 불러오기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 0: 리서치 -->
+    <div id="p0" class="panel">
+      <div class="card">
+        <div class="card-hdr">
+          <h2>Step 0 — 경쟁 영상 리서치</h2>
+          <p>Gemini AI · 선택</p>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>소재 파일</label>
+            <select id="s0-src"></select>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s0-run" onclick="runResearch()">🔍 리서치 시작</button>
+            <span id="s0-tag" class="tag hidden"></span>
+          </div>
+          <div id="s0-log" class="log hidden"></div>
+          <div id="s0-result" class="ca hidden" style="white-space:pre-wrap"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: 대본 생성 -->
+    <div id="p1" class="panel">
+      <div class="card">
+        <div class="card-hdr">
+          <h2>Step 1 — 제목 + 썸네일 + 대본</h2>
+          <p>Claude AI</p>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>소재 파일</label>
+            <select id="s1-src"></select>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s1-run" onclick="runWrite()">✍️ 대본 생성</button>
+            <span id="s1-tag" class="tag hidden"></span>
+          </div>
+          <div id="s1-log" class="log hidden"></div>
+        </div>
+      </div>
+      <!-- 결과 -->
+      <div class="card hidden" id="s1-result">
+        <div class="tabs">
+          <button class="tbtn on" data-t="t1a">📌 제목</button>
+          <button class="tbtn" data-t="t1b">🖼️ 썸네일</button>
+          <button class="tbtn" data-t="t1c">📝 대본 편집</button>
+        </div>
+        <div id="t1a" class="tc on"><div class="ca" id="v1a"></div></div>
+        <div id="t1b" class="tc"><div class="ca" id="v1b"></div></div>
+        <div id="t1c" class="tc" style="display:flex;flex-direction:column;gap:.7rem">
+          <textarea class="cedit" id="v1c"></textarea>
+          <div style="display:flex;gap:.7rem">
+            <button class="btn btn-g" onclick="saveScript()">💾 대본 저장</button>
+            <button class="btn btn-icon" onclick="copyEl('v1c')">📋 복사</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: 재료 생성 -->
+    <div id="p2" class="panel">
+      <div class="card">
+        <div class="card-hdr">
+          <h2>Step 2 — 영상 재료 일괄 생성</h2>
+          <p>Claude AI</p>
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="row">
+            <div class="fg">
+              <label>출력 폴더 (대본)</label>
+              <select id="s2-ts" onchange="updateS2Cmd()"></select>
+            </div>
+            <div class="fg">
+              <label>소재 파일</label>
+              <select id="s2-src"></select>
+            </div>
+            <div class="fg" style="justify-content:flex-end;padding-top:1.4rem">
+              <label class="chk-row"><input type="checkbox" id="s2-short"> 숏폼 (60초)</label>
+            </div>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s2-run" onclick="runGenerate()">⚡ 재료 생성</button>
+            <span id="s2-tag" class="tag hidden"></span>
+          </div>
+          <div id="s2-log" class="log hidden"></div>
+        </div>
+      </div>
+      <div class="card hidden" id="s2-result">
+        <div class="tabs">
+          <button class="tbtn on" data-t="t2a">🖼️ 이미지 프롬프트</button>
+          <button class="tbtn" data-t="t2b">🎬 Vrew 가이드</button>
+          <button class="tbtn" data-t="t2c">📊 메타데이터</button>
+        </div>
+        <div id="t2a" class="tc on"><div class="pcards" id="v2a"></div></div>
+        <div id="t2b" class="tc"><div class="ca md" id="v2b"></div></div>
+        <div id="t2c" class="tc">
+          <div class="mgrid">
+            <div><div class="mlbl">📌 업로드 제목</div><div class="ca" id="v2c1"></div></div>
+            <div><div class="mlbl">📝 영상 설명</div><div class="ca" id="v2c2"></div></div>
+            <div><div class="mlbl">🏷️ 태그</div><div class="ca" id="v2c3"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 이미지 -->
+    <div id="p3" class="panel">
+      <!-- 자동 생성 -->
+      <div class="card">
+        <div class="card-hdr"><h2>Step 3-A — Imagen 3 자동 생성</h2><p>Google AI · 완전 자동</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>출력 폴더</label>
+            <select id="s3a-ts"></select>
+          </div>
+          <div style="font-size:.8rem;color:var(--text2)">
+            💡 Step 2에서 생성된 이미지 프롬프트를 Google Imagen 3로 자동 생성합니다.<br>
+            비용: 약 $0.04/장 × 프롬프트 수 (Gemini API 키 필요)
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s3a-run" onclick="runImages()">🎨 이미지 자동 생성</button>
+            <span id="s3a-tag" class="tag hidden"></span>
+          </div>
+          <div id="s3a-log" class="log hidden"></div>
+        </div>
+      </div>
+      <!-- 수동 생성 -->
+      <div class="card">
+        <div class="card-hdr"><h2>Step 3-B — 수동 이미지 생성</h2><p>수동</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>출력 폴더</label>
+            <select id="s3-ts" onchange="loadPrompts()"></select>
+          </div>
+          <div class="tlinks">
+            <a href="https://labs.google/fx/tools/whisk" target="_blank" class="tlink">🎨 Whisk 열기</a>
+            <a href="https://www.nanobana.ai/" target="_blank" class="tlink">🍌 나노바나나 열기</a>
+          </div>
+          <div class="pcards" id="s3-cards"><div class="empty">출력 폴더를 선택하면 프롬프트가 표시됩니다</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Vrew -->
+    <div id="p4" class="panel">
+      <div class="card">
+        <div class="card-hdr"><h2>Step 4 — Vrew 편집 가이드</h2><p>수동</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>출력 폴더</label>
+            <select id="s4-ts" onchange="loadGuide()"></select>
+          </div>
+          <div class="tlinks">
+            <a href="https://vrew.ai/" target="_blank" class="tlink">🎬 Vrew 열기</a>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="tabs">
+          <button class="tbtn on" data-t="t4a">📖 편집 가이드</button>
+          <button class="tbtn" data-t="t4b">⏱️ 타임라인</button>
+        </div>
+        <div id="t4a" class="tc on"><div class="ca md" id="v4a">출력 폴더를 선택하세요</div></div>
+        <div id="t4b" class="tc"><div class="ca md" id="v4b"></div></div>
+      </div>
+    </div>
+
+    <!-- Step 5: 블로그 -->
+    <div id="p5" class="panel">
+      <div class="card">
+        <div class="card-hdr"><h2>Step 5 — 블로그 글 생성</h2><p>Claude AI · 선택</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="row">
+            <div class="fg" style="flex:2">
+              <label>YouTube URL</label>
+              <input type="text" id="s5-url" placeholder="https://youtu.be/XXXXX">
+            </div>
+            <div class="fg" style="flex:1">
+              <label>출력 폴더</label>
+              <select id="s5-ts"></select>
+            </div>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s5-run" onclick="runBlog()">📝 블로그 생성</button>
+            <span id="s5-tag" class="tag hidden"></span>
+          </div>
+          <div id="s5-log" class="log hidden"></div>
+        </div>
+      </div>
+      <div class="card hidden" id="s5-result">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:.7rem">
+          <div class="ca" id="v5" style="white-space:pre-wrap;max-height:500px;overflow-y:auto"></div>
+          <button class="btn btn-g" style="align-self:flex-start" onclick="copyEl('v5')">📋 블로그 글 복사</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6: 영상 빌드 -->
+    <div id="p6" class="panel">
+      <div class="card">
+        <div class="card-hdr"><h2>Step 6 — 영상 자동 빌드</h2><p>MoviePy + Whisper · 완전 자동</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="fg">
+            <label>출력 폴더 (이미지 + 음성 필요)</label>
+            <select id="s6-ts"></select>
+          </div>
+          <div id="s6-status" style="font-size:.82rem;color:var(--text2)">출력 폴더를 선택하세요</div>
+          <div style="font-size:.8rem;color:var(--text2)">
+            💡 02_images/ 이미지 + 01_voice/ 음성 → MP4 영상 자동 합성<br>
+            Whisper(자막) · FFmpeg(자막 삽입) 설치 시 자막 자동 추가<br>
+            필수: <code>pip install moviepy</code> &nbsp;
+            선택: <code>pip install faster-whisper</code>
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s6-run" onclick="runVideo()">🎬 영상 빌드 시작</button>
+            <span id="s6-tag" class="tag hidden"></span>
+          </div>
+          <div id="s6-log" class="log hidden"></div>
+        </div>
+      </div>
+      <div class="card hidden" id="s6-result">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:.7rem">
+          <div style="font-size:.9rem;color:var(--green)">✅ 영상 생성 완료!</div>
+          <div class="ca" id="v6-path" style="font-size:.85rem"></div>
+          <button class="btn btn-s" onclick="goPanel('p7',document.querySelector('[data-p=&quot;p7&quot;]'))">
+            ▶ Step 7 YouTube 업로드로 이동
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7: YouTube 업로드 -->
+    <div id="p7" class="panel">
+      <div class="card">
+        <div class="card-hdr"><h2>Step 7 — YouTube 자동 업로드</h2><p>YouTube Data API v3</p></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:1rem">
+          <div class="row">
+            <div class="fg" style="flex:2">
+              <label>출력 폴더 (영상 파일 필요)</label>
+              <select id="s7-ts"></select>
+            </div>
+            <div class="fg" style="flex:1">
+              <label>공개 설정</label>
+              <select id="s7-privacy">
+                <option value="private">🔒 비공개 (권장)</option>
+                <option value="unlisted">🔗 링크 공개</option>
+                <option value="public">🌐 전체 공개</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:.8rem;color:var(--text2)">
+            💡 OAuth 최초 실행 시 브라우저 인증 팝업이 뜹니다 (서버 터미널에서 진행).<br>
+            사전 준비: Google Cloud Console → YouTube Data API v3 활성화 →<br>
+            OAuth 클라이언트 ID(데스크톱) 생성 → <code>config/youtube_client_secrets.json</code> 저장
+          </div>
+          <div style="display:flex;gap:.7rem;align-items:center">
+            <button class="btn btn-p" id="s7-run" onclick="runUpload()">🚀 YouTube 업로드</button>
+            <span id="s7-tag" class="tag hidden"></span>
+          </div>
+          <div id="s7-log" class="log hidden"></div>
+        </div>
+      </div>
+      <div class="card hidden" id="s7-result">
+        <div class="card-body" style="display:flex;flex-direction:column;gap:.7rem">
+          <div style="font-size:.9rem;color:var(--green)">✅ 업로드 완료!</div>
+          <div class="ca" id="v7-url" style="font-size:.9rem;font-weight:700"></div>
+          <button class="btn btn-icon" onclick="copyEl('v7-url')">📋 URL 복사</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📖 매뉴얼 -->
+    <div id="pManual" class="panel">
+
+      <!-- 히어로 -->
+      <div class="card">
+        <div class="card-hdr"><h2>📖 사용 매뉴얼</h2><p>YouTube 자동화 플랫폼</p></div>
+        <div class="card-body">
+          <div class="man-hero">
+            <h1>🎬 YouTube 자동화 플랫폼</h1>
+            <p>소재 하나로 리서치 → 대본 → 이미지 → 음성 → 편집 → 업로드까지<br>전 과정을 AI가 자동으로 처리합니다. 아래 순서대로 진행하세요.</p>
+          </div>
+
+          <!-- 워크플로우 흐름도 -->
+          <div style="font-size:.72rem;font-weight:800;color:var(--text2);letter-spacing:.05em;text-transform:uppercase;margin-bottom:.4rem">전체 워크플로우</div>
+          <div class="man-flow">
+            <div class="man-step"><div class="man-step-num" style="background:var(--cs)">⚙</div><div><div class="man-step-txt">API 설정</div><div class="man-step-sub">Gemini 키 입력</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c0)">0</div><div><div class="man-step-txt">리서치</div><div class="man-step-sub">경쟁 영상 분석</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c1)">1</div><div><div class="man-step-txt">대본 생성</div><div class="man-step-sub">제목·썸네일·스크립트</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c2)">2</div><div><div class="man-step-txt">재료 생성</div><div class="man-step-sub">프롬프트·가이드·메타</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c3)">3</div><div><div class="man-step-txt">이미지</div><div class="man-step-sub">Whisk / 자동생성</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c4)">4</div><div><div class="man-step-txt">Vrew 편집</div><div class="man-step-sub">영상 편집 가이드</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c6)">6</div><div><div class="man-step-txt">영상 빌드</div><div class="man-step-sub">MP4 자동 합성</div></div></div>
+            <div class="man-arr">→</div>
+            <div class="man-step"><div class="man-step-num" style="background:var(--c7)">7</div><div><div class="man-step-txt">업로드</div><div class="man-step-sub">YouTube 자동 게시</div></div></div>
+          </div>
+          <div class="man-tip"><strong>💡 선택 단계:</strong> Step 0 리서치, Step 5 블로그, Step 6 영상 빌드, Step 7 업로드는 필요할 때만 사용합니다. <strong>최소 필수 경로</strong>는 API 설정 → Step 1 → Step 2 → Step 3(수동) → Vrew 편집 → 업로드입니다.</div>
+        </div>
+      </div>
+
+      <!-- 각 스텝 상세 -->
+      <div class="card">
+        <div class="card-hdr"><h2>⚙️ API 설정</h2><p>시작 전 필수</p></div>
+        <div class="card-body">
+          <div class="man-api">
+            <div class="man-api-row">
+              <div class="man-api-badge" style="background:var(--c0)">Gemini</div>
+              <div class="man-api-info">
+                <div class="man-api-name">Gemini API Key</div>
+                <div class="man-api-desc">모든 AI 생성(리서치·대본·재료·블로그) 필수 · aistudio.google.com에서 무료 발급</div>
+              </div>
+              <div style="font-size:.72rem;font-weight:800;color:var(--green)">필수</div>
+            </div>
+            <div class="man-api-row">
+              <div class="man-api-badge" style="background:var(--c3)">ElevenLabs</div>
+              <div class="man-api-info">
+                <div class="man-api-name">ElevenLabs API Key</div>
+                <div class="man-api-desc">AI 음성 더빙 자동 생성 · 없으면 건너뜀 (Vrew TTS로 대체 가능)</div>
+              </div>
+              <div style="font-size:.72rem;font-weight:800;color:var(--text2)">선택</div>
+            </div>
+            <div class="man-api-row">
+              <div class="man-api-badge" style="background:var(--c7)">YouTube</div>
+              <div class="man-api-info">
+                <div class="man-api-name">YouTube Data API v3</div>
+                <div class="man-api-desc">Step 7 자동 업로드용 · Google Cloud Console에서 OAuth 설정 필요</div>
+              </div>
+              <div style="font-size:.72rem;font-weight:800;color:var(--text2)">선택</div>
+            </div>
+          </div>
+          <div class="man-tip"><strong>🔑 Gemini 키 발급:</strong> aistudio.google.com → 로그인 → 왼쪽 메뉴 "Get API key" → "Create API key" → 복사 후 붙여넣기</div>
+        </div>
+      </div>
+
+      <div class="man-sec">
+
+        <!-- Step 0 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(8,145,178,.12);color:var(--c0)">🔍</div>
+            <h3>Step 0 — 경쟁 영상 리서치</h3>
+            <span style="background:var(--c0)">선택</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c0)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">소재 파일 선택 후 <strong>리서치 시작</strong> 클릭</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">Gemini가 <strong>키워드 10개, 경쟁 영상 유형 5가지, 차별화 전략, SEO 전략</strong> 자동 분석</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">결과를 참고해 소재를 보완하거나 그대로 Step 1로 진행</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">건너뛰어도 Step 1에서 충분히 좋은 결과가 나옵니다</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(124,58,237,.12);color:var(--c1)">✍️</div>
+            <h3>Step 1 — 대본 생성</h3>
+            <span style="background:var(--c1)">핵심</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c1)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">소재 파일 선택 후 <strong>대본 생성</strong> 클릭 (1~3분 소요)</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>제목</strong> 탭: 클릭률 높은 제목 3가지 후보 생성</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>썸네일</strong> 탭: 3~5단어 임팩트 문구</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>대본 편집</strong> 탭: 직접 수정 가능, <code>💾 저장</code> 필수</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>🎙️ 더빙용 변환</strong>: 마크다운 기호 제거 → Vrew·ElevenLabs 붙여넣기용</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(234,88,12,.12);color:var(--c2)">⚡</div>
+            <h3>Step 2 — 재료 일괄 생성</h3>
+            <span style="background:var(--c2)">핵심</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c2)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>출력 폴더</strong> (Step 1 결과)와 <strong>소재 파일</strong> 선택</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">롱폼(15장) / <strong>숏폼 체크</strong> 시 8장으로 생성</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>[1/3]</strong> 이미지 프롬프트 · <strong>[2/3]</strong> Vrew 가이드+타임라인 · <strong>[3/3]</strong> 메타데이터 자동 생성</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">이미지 프롬프트 탭에서 각 장면별 📋 복사 → Whisk/나노바나나 붙여넣기</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(219,39,119,.12);color:var(--c3)">🎨</div>
+            <h3>Step 3 — 이미지 생성</h3>
+            <span style="background:var(--c3)">수동/자동</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c3)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>3-A 자동:</strong> Gemini API로 Imagen 3 이미지 자동 생성 (약 $0.04/장)</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>3-B 수동:</strong> 프롬프트 복사 → <a href="https://labs.google/fx/tools/whisk" target="_blank" style="color:var(--c3)">Whisk</a> 또는 <a href="https://www.nanobana.ai/" target="_blank" style="color:var(--c3)">나노바나나</a>에 붙여넣기</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">생성한 이미지를 <code>output/[타임스탬프]/02_images/</code>에 저장</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">파일명 규칙: <code>01_intro.png</code>, <code>02_scene.png</code> 순서대로</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(5,150,105,.12);color:var(--c4)">🎬</div>
+            <h3>Step 4 — Vrew 편집</h3>
+            <span style="background:var(--c4)">수동</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c4)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><a href="https://vrew.ai/" target="_blank" style="color:var(--c4)">Vrew</a> 실행 → 새 프로젝트 → 음성 파일 (<code>01_voice/narration.mp3</code>) 불러오기</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">음성이 없으면 <strong>Vrew 내장 TTS</strong>에 더빙용 텍스트 붙여넣기 (Step 1 더빙용 변환 활용)</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>편집 가이드</strong> 탭: 자막 스타일, BGM, 전환 효과 설정 참고</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt"><strong>타임라인</strong> 탭: 이미지 배치 시간 순서 참고</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">완성 후 MP4 내보내기 (1080p, H.264)</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(37,99,235,.12);color:var(--c5)">📝</div>
+            <h3>Step 5 — 블로그 글 생성</h3>
+            <span style="background:var(--c5)">선택</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c5)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">YouTube 업로드 후 영상 URL 입력</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">대본 기반으로 <strong>SEO 최적화 블로그 포스팅</strong> 자동 생성 (1200~1800자)</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">H1/H2 구조, YouTube 임베드 섹션, 해시태그 10개 포함</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">📋 복사 후 네이버 블로그 / 티스토리에 붙여넣기</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(126,34,206,.12);color:var(--c6)">🎞️</div>
+            <h3>Step 6 — 영상 자동 빌드</h3>
+            <span style="background:var(--c6)">선택</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c6)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">이미지(<code>02_images/</code>) + 음성(<code>01_voice/</code>) 준비 필수</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">MoviePy로 MP4 자동 합성, Whisper 설치 시 자막 자동 추가</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">사전 설치: <code>pip install moviepy</code></div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">자막 추가: <code>pip install faster-whisper</code> (선택)</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">Vrew 편집을 선호하면 이 단계를 건너뜁니다</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 7 -->
+        <div class="man-card">
+          <div class="man-card-hdr">
+            <div class="mc-icon" style="background:rgba(220,38,38,.12);color:var(--c7)">🚀</div>
+            <h3>Step 7 — YouTube 업로드</h3>
+            <span style="background:var(--c7)">선택</span>
+          </div>
+          <div class="man-card-body">
+            <div class="man-list" style="color:var(--c7)">
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">Google Cloud Console → YouTube Data API v3 활성화 필요</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">OAuth 클라이언트 ID(데스크톱) 생성 → <code>config/youtube_client_secrets.json</code> 저장</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">최초 실행 시 브라우저 인증 팝업 → 서버 터미널에서 승인</div></div>
+              <div class="man-item"><div class="man-item-dot"></div><div class="man-item-txt">공개 설정: <strong>비공개</strong>로 업로드 후 직접 확인하고 공개 변경 권장</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FAQ -->
+      <div class="card">
+        <div class="card-hdr"><h2>❓ 자주 묻는 질문</h2><p>FAQ</p></div>
+        <div class="card-body">
+          <div class="man-qa">
+            <div class="man-q">
+              <div class="man-q-t">Gemini API 키는 어디서 받나요?</div>
+              <div class="man-q-a">aistudio.google.com에 접속 → 구글 계정 로그인 → 왼쪽 메뉴 "Get API key" → "Create API key" 클릭 → <code>AIzaSy...</code> 형식의 키 복사 → API 설정에 붙여넣기. 무료로 사용 가능합니다.</div>
+            </div>
+            <div class="man-q">
+              <div class="man-q-t">음성 파일은 어떻게 만드나요?</div>
+              <div class="man-q-a">3가지 방법이 있습니다. ① Vrew 내장 TTS — 대본 붙여넣기 후 AI 목소리 선택 (가장 간단). ② ElevenLabs API 키를 설정에 입력하면 자동 생성. ③ elevenlabs.io에서 수동으로 mp3 다운로드 후 <code>01_voice/narration.mp3</code>로 저장.</div>
+            </div>
+            <div class="man-q">
+              <div class="man-q-t">대본에 특수기호(**,---, [섹션] 등)가 많아요.</div>
+              <div class="man-q-a">Step 1 → 대본 편집 탭 → <strong>🎙️ 더빙용 변환</strong> 버튼을 누르면 마크다운 기호, 섹션 라벨, 수평선 등이 모두 제거된 더빙용 텍스트가 아래에 생성됩니다. 📋 복사 후 Vrew에 붙여넣으세요.</div>
+            </div>
+            <div class="man-q">
+              <div class="man-q-t">이미지는 몇 장 만들어야 하나요?</div>
+              <div class="man-q-a">롱폼(5~10분)은 15장, 숏폼(60초)은 8장이 기본입니다. Step 2에서 숏폼 체크박스로 선택합니다. 각 이미지는 보통 3~6초씩 화면에 표시됩니다.</div>
+            </div>
+            <div class="man-q">
+              <div class="man-q-t">서버 없이 실행하려면 어떻게 하나요?</div>
+              <div class="man-q-a"><code>index.html</code>을 브라우저에서 직접 열면 됩니다. AI 생성 기능은 Gemini API를 브라우저에서 직접 호출합니다. 단, Step 6(영상 빌드)·Step 7(업로드)은 Python 서버(<code>플랫폼실행.bat</code>) 가 필요합니다.</div>
+            </div>
+            <div class="man-q">
+              <div class="man-q-t">생성한 결과물은 어디에 저장되나요?</div>
+              <div class="man-q-a">브라우저 모드: localStorage에 자동 저장 (브라우저 닫아도 유지). 서버 모드: <code>C:\YouTube\output\[YYYYMMDD_HHMMSS]\</code> 폴더에 저장. 왼쪽 사이드바 "생성 목록"에서 이전 작업을 불러올 수 있습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 파일 구조 -->
+      <div class="card">
+        <div class="card-hdr"><h2>📁 출력 폴더 구조</h2><p>output/[타임스탬프]/</p></div>
+        <div class="card-body">
+          <div style="background:linear-gradient(135deg,#f0f4ff,#f8f9ff);border:1.5px solid #c7d2fe;border-left:4px solid var(--c1);border-radius:10px;padding:1rem 1.2rem;font-family:Consolas,monospace;font-size:.81rem;color:#1e1b4b;line-height:2">
+output/<br>
+└── 20260317_143000/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c1);font-weight:700">00_script/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 대본, 제목, 썸네일<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── script.txt&nbsp;&nbsp;&nbsp;&nbsp;← 편집 가능한 최종 대본<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── title.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── thumbnail.txt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c3);font-weight:700">01_voice/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 음성 파일<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── narration.mp3&nbsp;← ElevenLabs 생성<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c3);font-weight:700">02_images/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 이미지 저장 위치 (수동)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── 01_intro.png<br>
+&nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── 02_scene.png ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c2);font-weight:700">03_prompts/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 이미지 생성 프롬프트<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c4);font-weight:700">04_guide/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← Vrew 편집 가이드 + 타임라인<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c2);font-weight:700">05_metadata/</span>&nbsp;&nbsp;&nbsp;&nbsp;← 업로드 제목·설명·태그<br>
+&nbsp;&nbsp;&nbsp;&nbsp;├── <span style="color:var(--c5);font-weight:700">06_blog/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 블로그 포스팅<br>
+&nbsp;&nbsp;&nbsp;&nbsp;└── <span style="color:var(--c6);font-weight:700">07_video/</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;← 완성 MP4 영상
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+</div>
+
+<script>
+const DATA = [
+  {
+    "ts": "20260316_120000",
+    "title": "1. 공대생 할아버지가 60년 동안 배운 것 \"세상에는 계산할 수 없는 변수가 있다\"\n2. 논리와 감성이 만나면 어떤 일이 생길까 — 공대생 할아버지와 미대생 할머니의 60년\n3. \"오늘 빛이 보라색이에요\" 이 말이 공학도의 마음을 녹인 이유 | 공대생 할아버지 이야기\n",
+    "thumbnail": "계산할 수 없는 사람\n\n(부제: 공대생 × 미대생 60년)\n",
+    "script": "[인트로]\n\n오늘 소개해드릴 이야기는, 완전히 다른 두 사람이 60년을 함께한 이야기입니다.\n\n한 사람은 공대생이었습니다. 모든 것을 수치로 계산했고, 약속 시간보다 정확히 10분 먼저 도착했으며, 커피 한 잔도 90초 만에 결정했습니다. 카페인 효율 대비 당분 함량이 최적인 아메리카노로요.\n\n다른 한 사람은 미대생이었습니다. 오후 3시의 햇빛에서 보라색을 봤고, 도자기 앞에서 \"천 년 전 하늘 같다\"고 말했습니다. 커피 한 잔을 고르는 데 5분이 걸렸는데, 그건 카페의 분위기와 오늘의 빛이 어떤 음료를 부르는지 느끼고 있었기 때문입니다.\n\n이 두 사람이 만났습니다. 그리고 60년을 함께했습니다.\n\n이건 그 이야기입니다.\n\n---\n\n[섹션 1: 다른 언어]\n\n두 사람은 분명히 같은 언어를 쓰고 있었습니다. 한국어였습니다. 단어도 같고 문법도 같았습니다.\n\n그런데 대화가 자꾸 어긋났습니다.\n\n공대생이 미술관에서 추상화를 보며 물었습니다. \"저 그림은 왜 저렇게 그렸을까요?\"\n\n미대생은 답 대신 되물었습니다. \"보면서 어떤 느낌이었어요?\"\n\n공대생은 그게 답이 아니라는 걸 알았습니다. 하지만 뭔가 답이 그 안에 있는 것 같기도 했습니다.\n\n공대생이 말했습니다. \"파란색이 많았고, 사선이 반복됐어요. 작가의 의도가 궁금했어요.\"\n\n미대생이 말했습니다. \"저는 불안한 느낌이었어요. 근데 그 불안이 나쁘지 않은 불안이었어요.\"\n\n공대생은 고개를 갸우뚱했습니다. 불안에 좋고 나쁜 구분이 있다는 것, 그날 처음 들었습니다.\n\n그날 밤, 공대생은 메모를 했습니다.\n\n\"그녀는 '왜'가 아니라 '어때'로 질문한다. '왜'는 원인을 찾는다. '어때'는 감각을 찾는다. 이건 다른 언어다.\"\n\n메모를 다시 읽었습니다. 그리고 한 줄을 덧붙였습니다.\n\n\"그런데 이상하게 그 언어가, 배우고 싶다.\"\n\n---\n\n[섹션 2: 계산할 수 없는 변수]\n\n두 번째 만남이었습니다.\n\n공대생은 이번에도 약속 시간보다 정확히 10분 먼저 도착해 있었습니다. 지난번에 그녀가 20분 늦었으니, 이번에는 그 변수를 감안해 마음속으로 \"오늘도 10분에서 30분 사이에 올 것\"이라는 예측값까지 계산해두었습니다.\n\n오늘도 그녀는 18분 늦었습니다.\n\n\"오늘은 18분 늦으셨어요.\"\n\n\"노을이 예뻤어요.\"\n\n공대생은 잠시 하늘을 올려다봤습니다. 오후 3시였습니다. 노을이 질 시간이 아니었습니다.\n\n\"지금은 오후 3시인데요.\"\n\n\"오늘따라 빛이 노을 같았어요. 오후에도 노을 같은 빛이 있거든요.\"\n\n공대생은 그 말을 이해하려고 했습니다. 그러나 노을은 해질 녘에 나타나는 현상이었습니다.\n\n그는 다시 하늘을 봤습니다.\n\n확실히 맑았습니다. 그러나 노을은 아니었습니다.\n\n그런데 이상하게도, 그녀의 말을 들으니 그 빛이 조금 달라 보이는 것 같기도 했습니다.\n\n아니, 그럴 리가 없었습니다. 빛의 파장은 변하지 않습니다.\n\n그날, 공대생은 처음으로 생각했습니다.\n\n어쩌면 세상에는 자신이 계산할 수 없는 변수들이 존재하는지도 모른다고.\n\n그리고 그 변수를 늘 데리고 다니는 이 사람이, 이상하게도 다음 만남이 기다려진다는 것을.\n\n---\n\n[섹션 3: 다른 언어를 배운다는 것]\n\n다섯 번째 만남은 박물관이었습니다.\n\n고려청자 전시실은 조용했습니다. 은은한 조명 아래 청자들이 빛나고 있었습니다.\n\n공대생은 설명 패널을 읽었습니다. 제작 연도, 높이, 무게, 출토 지역.\n\n그런데 미대생은 유리창에 거의 얼굴을 붙이다시피 하고 도자기를 들여다보고 있었습니다.\n\n\"이 색 이름이 뭐예요?\"\n\n\"청자 비색이라고 돼 있어요.\"\n\n\"비색. 날아갈 것 같은 색이네요.\"\n\n공대생은 그 표현을 이해하려 했습니다. 색이 날아간다는 것은 물리적으로 불가능했습니다. 그런데 그 청자를 다시 보자, 확실히 무언가 가벼운 느낌이 있었습니다.\n\n\"유약 성분과 가마 온도가 정밀하게 맞아야 이 색이 나와요.\"\n\n\"그러니까 이 색이 나오면, 도공도 놀랐겠다.\"\n\n공대생은 그 말에 잠시 멈췄습니다.\n\n그렇습니다. 온도를 계산했더라도, 이 색이 실제로 나왔을 때, 그 도공은 분명히 놀랐을 것입니다. 계산이 맞았다는 것이 아니라, 이 빛깔이 세상에 존재하게 됐다는 사실에.\n\n그날, 공대생은 처음으로 \"왜\"가 아닌 다른 질문을 했습니다.\n\n\"어때요, 이 색.\"\n\n미대생은 잠시 그를 봤다가 다시 청자를 봤습니다.\n\n\"천 년 전 하늘 같아요.\"\n\n그는 그 말을 이해할 수 없었지만, 왜인지 고개를 끄덕였습니다.\n\n---\n\n[섹션 4: 연두색]\n\n여섯 번째 만남.\n\n공대생은 집에서 미리 연습했습니다. 거울 앞에서 \"어때요?\"라고 말해봤습니다. 어색했습니다. 다시 했습니다. 여전히 어색했습니다.\n\n그러나 그는 포기하지 않았습니다. 충분한 반복으로 자연스러움을 만들 수 있다는 공학적 신념이 있었기 때문입니다.\n\n공원 벤치에 나란히 앉아, 그녀가 스케치북에 무언가를 그리는 것을 잠시 지켜보다가, 공대생이 말했습니다.\n\n\"지금 이 순간이요. 어때요.\"\n\n그녀가 주변을 둘러봤습니다. 바람이 조금 불었습니다. 나뭇잎이 흔들렸습니다. 멀리서 아이들의 웃음소리가 들렸습니다.\n\n\"연두색이요.\"\n\n\"연두색이요?\"\n\n\"막 시작하는 것 같은 색. 아직 정해진 것도 없고, 어디로든 갈 수 있는 색이에요.\"\n\n공대생은 그 말을 머릿속에서 처리했습니다. 연두는 봄의 색이었습니다. 시작의 색이었습니다. 미결정 상태의 색이었습니다.\n\n이해하기도 전에 고개가 먼저 끄덕여졌습니다.\n\n\"저도 그런 것 같아요.\"\n\n그녀가 스케치북에서 눈을 들어 그를 봤습니다.\n\n\"같은 걸 느꼈어요?\"\n\n\"정확히는 모르겠지만, 지금이 어딘가로 향하고 있다는 건 알아요.\"\n\n그녀는 잠시 그를 바라봤습니다. 그리고 스케치북으로 시선을 내렸습니다.\n\n그림 속에는 공원 풍경이 담겨 있었습니다. 나무, 벤치, 그리고 나란히 앉은 두 사람의 실루엣.\n\n그는 그림 속 자신을 봤습니다.\n\n자신이 지금 어딘가에 담기고 있다는 것을, 처음으로 느꼈습니다.\n\n---\n\n[아웃트로]\n\n이 두 사람은 이후 60년을 함께했습니다.\n\n공대생은 끝내 그녀의 언어를 완전히 이해하지 못했습니다. 그리고 미대생도 끝내 그의 계산을 다 따라가지 못했습니다.\n\n그러나 그것이 문제가 되지 않았습니다.\n\n서로의 언어를 평생 배워가는 것, 그것이 함께 산다는 의미였기 때문입니다.\n\n오늘 소개해드린 이야기, \"공대생 할아버지, 미대생 할머니\"는 지금 웹에서 연재 중입니다. 60화 에피소드와 수채화 갤러리를 직접 보고 싶으신 분은 영상 설명란의 링크를 확인해주세요.\n\n구독과 좋아요는 이 이야기를 계속 만들어가는 힘이 됩니다. 감사합니다.\n",
+    "prompts": "[장면 1]\n한글 설명: 인트로 - 두 사람의 첫인상 대비\n영어 프롬프트: Watercolor illustration, split composition. Left side: an elderly man with neat white hair and glasses, holding a stopwatch, precise and calm expression. Right side: an elderly woman with flowing silver hair, painting on a sketchpad, surrounded by colors. Warm, nostalgic tone, soft pastel colors.\n\n---\n\n[장면 2]\n한글 설명: 공대생이 약속 장소에서 혼자 기다리며 메모장에 변수를 계산하는 장면\n영어 프롬프트: Watercolor scene, a young man in glasses sitting alone on a park bench, looking at his wristwatch. He has a small notebook open with neat mathematical equations and timings written. Late afternoon light. Soft golden tones, delicate watercolor wash.\n\n---\n\n[장면 3]\n한글 설명: 미대생이 늦게 도착하며 노을빛 하늘을 바라보는 장면\n영어 프롬프트: Watercolor painting, a young woman with paint-stained fingers arriving on a sunny afternoon, gazing upward at the bright sky as if seeing sunset colors. Expression of wonder and joy. Warm peach and lavender tones, impressionistic watercolor style.\n\n---\n\n[장면 4]\n한글 설명: 카페에서 미대생이 라벤더 라테를 바라보며 빛의 색을 느끼는 장면\n영어 프롬프트: Cozy cafe interior, watercolor style. Young woman holding a lavender latte, sunlight streaming through the window creating a purple-tinged glow. She looks dreamily at the drink. Soft purple and cream tones, warm cafe atmosphere.\n\n---\n\n[장면 5]\n한글 설명: 공대생이 처음으로 \"밤 같은 색\"이라고 말하며 자신의 아메리카노를 다르게 바라보는 장면\n영어 프롬프트: Watercolor close-up, two coffee cups on a wooden table. One dark americano (deep brown, like midnight), one lavender latte (soft purple). Two hands gently holding each cup from opposite sides. Warm light, intimate atmosphere.\n\n---\n\n[장면 6]\n한글 설명: 미술관에서 추상화 앞에 나란히 서 있는 두 사람\n영어 프롬프트: Watercolor museum scene. A couple standing side by side in front of a large abstract painting with blue diagonal lines. The man studies it analytically, the woman feels it emotionally. Both silhouetted slightly. Cool blue and warm ochre tones.\n\n---\n\n[장면 7]\n한글 설명: 고려청자 비색 앞에서 미대생이 황홀하게 바라보는 장면\n영어 프롬프트: Watercolor painting, museum display case with a glowing celadon Korean pottery. A young woman presses close to the glass, eyes wide with wonder. The pottery emits a soft jade-green glow (biseok color). Ethereal, quiet museum atmosphere.\n\n---\n\n[장면 8]\n한글 설명: 공대생이 처음으로 \"어때요, 이 색\"이라고 묻는 순간\n영어 프롬프트: Two people standing together, looking at ancient Korean celadon pottery. The man tentatively turns to the woman, about to ask a question about feeling rather than fact. Soft museum lighting, tender and quiet moment. Pale jade and warm amber watercolor tones.\n\n---\n\n[장면 9]\n한글 설명: 공원 벤치에서 미대생이 스케치북에 두 사람의 실루엣을 그리는 장면\n영어 프롬프트: Watercolor park scene, spring day. A woman sketching in a notebook on a bench, beside her a man watching her draw. On the sketchbook page, we see the silhouette of two people sitting together under a tree. Fresh spring greens, dappled light.\n\n---\n\n[장면 10]\n한글 설명: \"연두색\" - 봄날 두 사람의 새로운 시작\n영어 프롬프트: Watercolor illustration of a spring park, fresh lime green leaves just budding on trees. Two figures walking side by side on a path, their silhouettes leaning slightly toward each other. A feeling of beginning, of possibility. Bright young green tones, tender and hopeful.\n\n---\n\n[장면 11]\n한글 설명: 수십 년 후 - 노년의 두 사람이 함께 정원에서\n영어 프롬프트: Watercolor scene of two elderly figures in a garden, early evening light. The old man holds a small notebook, the old woman holds a paintbrush. They sit close together on a garden bench surrounded by flowers. Warm golden hour light, deep affectionate mood.\n\n---\n\n[장면 12]\n한글 설명: 수채화 갤러리 - 60년의 이야기가 담긴 그림들\n영어 프롬프트: Watercolor montage of many small illustrations arranged like a gallery wall: a coffee cup, a celadon vase, spring leaves, a park bench, two silhouettes, a sketchbook with equations and drawings mixed together. Warm nostalgic palette, gentle and loving.\n\n---\n\n[장면 13]\n한글 설명: 아웃트로 - 두 손이 함께\n영어 프롬프트: Watercolor close-up of two aged hands intertwined — one holding a mechanical pencil (engineer), one holding a paintbrush (artist). Between the fingers, small watercolor splashes of color mix with tiny mathematical symbols. Tender, intimate, eternal love.\n\n---\n\n[장면 14]\n한글 설명: 엔딩 - 제목 카드\n영어 프롬프트: Watercolor title card design. Text area center, surrounded by gentle watercolor washes of soft purple, jade green, warm gold, and peach. Delicate ink line border. A small engineer's compass and a paintbrush crossed like a logo. Elegant and warm.\n\n---\n\n[장면 15]\n한글 설명: 구독 유도 - 따뜻한 분위기의 채널 아이덴티티\n영어 프롬프트: Watercolor illustration of an open book with watercolor paint splatters on its pages. On one page, equations and graphs (soft blue). On the other page, expressive abstract watercolor brushstrokes (warm pink and gold). The two pages merge in the center. Subscribe and notification bell icon in corner.\n",
+    "guide": "# Vrew 편집 가이드 — 공대생 할아버지, 미대생 할머니\n\n## 기본 설정\n\n- **포맷**: 롱폼 (5-8분)\n- **해상도**: 1920x1080 (16:9) 또는 2160x3840 (9:16 세로형 병행 제작 권장)\n- **파일**: `01_voice/narration.mp3` 를 Vrew에 불러오기\n\n---\n\n## Step 1: 음성 불러오기\n\n1. Vrew 실행 → 새 프로젝트\n2. `01_voice/narration.mp3` 불러오기\n3. 자막 자동 생성 → 한국어 선택\n4. 자막 오류 수정 (특히 고유명사: 비색, 공대생, 미대생)\n\n---\n\n## Step 2: 자막 스타일\n\n| 항목 | 설정값 |\n|------|--------|\n| 폰트 | 나눔명조 또는 KoPubWorld 바탕 |\n| 크기 | 48-52px |\n| 색상 | 흰색 (#FFFFFF) + 검은 테두리 2px |\n| 위치 | 하단 중앙 (하단 10% 영역) |\n| 행간 | 1.4 |\n| 강조 키워드 | \"계산할 수 없는\", \"어때요\", \"연두색\", \"비색\" → 노란색 (#FFE066) |\n\n---\n\n## Step 3: 이미지 배치 순서\n\n`timeline.md` 참고. 각 이미지는 `02_images/` 폴더에서 불러오기.\n\n### 전환 효과\n- 섹션 간 전환: **Fade (1.5초)**\n- 이미지 내 전환: **Cross Dissolve (0.8초)**\n- 인트로/아웃트로: **Slow Fade In (2초)**\n\n---\n\n## Step 4: 배경음악\n\n| 구간 | 추천 BGM 분위기 |\n|------|----------------|\n| 인트로 | 피아노 솔로, 느리고 따뜻함 (예: 유키 구라모토 스타일) |\n| 섹션 1-2 | 현악기, 약간의 긴장감과 따뜻함 혼재 |\n| 섹션 3-4 | 점점 따뜻해지는 피아노+첼로 |\n| 아웃트로 | 전체를 감싸는 따뜻한 오케스트라 스웰 |\n\n**추천 무료 BGM 소스**: YouTube Audio Library, Pixabay Music\n**검색 키워드**: \"soft piano nostalgic\", \"warm strings emotional\", \"watercolor gentle\"\n\n**BGM 볼륨**: 내레이션의 15-20% 수준으로 설정\n\n---\n\n## Step 5: 인트로/아웃트로\n\n### 인트로 (0:00-0:10)\n- 검은 화면에서 페이드인\n- 제목 텍스트 천천히 등장: \"공대생 할아버지, 미대생 할머니\"\n- 수채화 번짐 효과 오버레이\n\n### 아웃트로 (마지막 30초)\n- 두 손이 맞잡힌 장면 13번 이미지\n- \"구독\" \"좋아요\" 텍스트 애니메이션\n- 채널 링크 + 갤러리 링크 텍스트 하단 표시\n\n---\n\n## Step 6: 최종 체크리스트\n\n- [ ] 자막 오탈자 확인\n- [ ] 이미지-음성 싱크 확인\n- [ ] BGM 볼륨 레벨 확인\n- [ ] 인트로/아웃트로 자연스러움 확인\n- [ ] 전체 영상 1회 시청\n- [ ] MP4 내보내기 (1080p, H.264)\n",
+    "timeline": "# 타임라인 — 공대생 할아버지, 미대생 할머니\n\n| 시간 | 내용 | 이미지 파일 | 자막 키포인트 |\n|------|------|-------------|----------------|\n| 0:00-0:10 | 인트로 타이틀 | 01_intro.png | (인트로 음악만) |\n| 0:10-0:45 | \"완전히 다른 두 사람\" 소개 | 01_intro.png | \"공대생\", \"미대생\" |\n| 0:45-1:15 | 공대생 소개 (계산, 아메리카노) | 02_engineer_waiting.png | \"90초\", \"카페인 효율\" |\n| 1:15-1:45 | 미대생 소개 (색채, 빛) | 03_artist_arriving.png | \"보라색\", \"천 년 전 하늘\" |\n| 1:45-2:00 | 섹션 전환: \"이 두 사람이 만났습니다\" | 04_lavender_latte.png | - |\n| 2:00-3:00 | 섹션1: 다른 언어 (미술관 장면) | 06_museum_abstract.png | \"'왜' vs '어때'\" |\n| 3:00-3:15 | 메모 장면 | 05_two_coffees.png | \"배우고 싶다\" |\n| 3:15-4:15 | 섹션2: 계산할 수 없는 변수 (약속 장면) | 02_engineer_waiting.png | \"노을이 예뻤어요\" |\n| 4:15-4:30 | \"빛의 파장은 변하지 않습니다\" | 03_artist_arriving.png | - |\n| 4:30-5:30 | 섹션3: 고려청자 (박물관 장면) | 07_celadon_pottery.png | \"비색\", \"날아갈 것 같은\" |\n| 5:30-5:50 | \"어때요, 이 색\" | 08_celadon_couple.png | 강조 자막 |\n| 5:50-6:50 | 섹션4: 연두색 (공원 장면) | 09_park_sketch.png | \"연두색\", \"어디로든\" |\n| 6:50-7:10 | 스케치북 장면 | 10_spring_green.png | \"어딘가에 담기고 있다\" |\n| 7:10-7:40 | 아웃트로: 60년 후 | 11_elderly_garden.png | \"서로의 언어를 배워가는 것\" |\n| 7:40-8:00 | 갤러리 몽타주 | 12_gallery_montage.png | 갤러리 링크 |\n| 8:00-8:20 | 엔딩: 두 손 | 13_two_hands.png | \"구독\" 유도 |\n| 8:20-8:30 | 타이틀 카드 + 아웃트로 | 14_title_card.png | - |\n\n---\n\n## 이미지 파일 저장 위치\n`C:\\YouTube\\output\\20260316_120000\\02_images\\`\n\n파일명 규칙: `01_intro.png`, `02_engineer_waiting.png`, ... (번호_설명.png)\n",
+    "meta_title": "공대생이 60년 동안 배운 것 \"세상엔 계산 못하는 변수가 있다\" | 공대생 할아버지 미대생 할머니\n",
+    "description": "논리와 감성이 만나면 어떤 일이 생길까요? 공대생 할아버지와 미대생 할머니의 60년 러브스토리입니다.\n\"오늘 빛이 보라색이에요\" — 이 한마디가 평생을 계산해온 공대생의 마음을 어떻게 바꿨는지 들어보세요.\n\n📖 타임스탬프\n0:00 - 완전히 다른 두 사람\n0:45 - 섹션1: 다른 언어 ('왜' vs '어때')\n2:00 - 섹션2: 계산할 수 없는 변수\n3:15 - 섹션3: 고려청자 비색 앞에서\n4:30 - 섹션4: 연두색 — 첫 감각의 언어\n6:50 - 60년을 함께한다는 것의 의미\n\n🖼️ 수채화 갤러리 보러가기\nhttps://jaiwshim-project.github.io/70-01-GrandPa_Mom/gallery.html\n\n이 채널에서는 AI와 함께 만드는 감성 스토리를 연재합니다.\n구독과 좋아요는 다음 에피소드를 만들어가는 힘이 됩니다 💙\n\n#공대생할아버지미대생할머니 #감성스토리 #러브스토리\n",
+    "tags": "공대생할아버지미대생할머니, 감성스토리, 러브스토리, 수채화, 웹소설, 60년사랑, 논리와감성, 노부부이야기, 공학도감성, 미대생, 수채화일러스트, 감동이야기, 한국감성, AI스토리, 갤러리, 연애이야기, 결혼이야기, 인생이야기, 따뜻한이야기, 단편소설\n",
+    "blog": "",
+    "youtube_url": "",
+    "has_video": false,
+    "image_count": 0
+  }
+];
+const INPUTS = ["grandpa_grandma_story.txt"];
+
+// ── 상태 ──────────────────────────────────────────────────────
+let outputs = [], inputs = [], curTs = null, pollTimers = {};
+const STANDALONE = typeof DATA !== 'undefined';
+
+// ── 초기화 ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  checkServer();
+  await Promise.all([loadInputs(), loadOutputs()]);
+  loadSettings();
+  setupTabs();
+  goPanel('p1', document.querySelector('[data-p="p1"]'));
+});
+
+async function checkServer() {
+  if (STANDALONE) {
+    document.getElementById('dot').className = 'dot ok';
+    document.getElementById('dot-label').textContent = '독립형 모드';
+    return;
+  }
+  try {
+    await fetch('/api/inputs');
+    document.getElementById('dot').className = 'dot ok';
+    document.getElementById('dot-label').textContent = '서버 연결됨';
+  } catch {
+    document.getElementById('dot-label').textContent = '연결 안됨';
+  }
+}
+
+// ── 네비게이션 ────────────────────────────────────────────────
+function goPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.sbtn').forEach(b => b.classList.remove('on'));
+  document.getElementById(id)?.classList.add('on');
+  btn?.classList.add('on');
+}
+function goSettings() {
+  goPanel('pSettings', document.querySelector('[data-p="pSettings"]'));
+}
+function setupTabs() {
+  document.querySelectorAll('.tbtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const box = btn.closest('.card');
+      box.querySelectorAll('.tbtn').forEach(b => b.classList.remove('on'));
+      box.querySelectorAll('.tc').forEach(c => c.classList.remove('on'));
+      btn.classList.add('on');
+      document.getElementById(btn.dataset.t)?.classList.add('on');
+    });
+  });
+}
+
+// ── 설정 ──────────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const d = await api('/api/settings');
+    document.getElementById('k-anthropic').value  = d.anthropic  || '';
+    document.getElementById('k-gemini').value     = d.gemini     || '';
+    document.getElementById('k-elevenlabs').value = d.elevenlabs || '';
+    document.getElementById('k-model').value      = d.model      || 'claude-sonnet-4-6';
+    document.getElementById('k-tone').value       = d.tone       || '';
+    document.getElementById('k-audience').value   = d.audience   || '';
+    updateKeyStatus('k-anthropic','ks-anthropic');
+    updateKeyStatus('k-gemini','ks-gemini');
+    updateKeyStatus('k-elevenlabs','ks-elevenlabs');
+  } catch(e) { console.warn('settings load failed', e); }
+}
+async function saveSettings() {
+  if (_needServer()) return;
+  await api('/api/settings','POST',{
+    anthropic:       document.getElementById('k-anthropic').value.trim(),
+    gemini:          document.getElementById('k-gemini').value.trim(),
+    elevenlabs:      document.getElementById('k-elevenlabs').value.trim(),
+    model:           document.getElementById('k-model').value,
+    tone:            document.getElementById('k-tone').value,
+    audience:        document.getElementById('k-audience').value,
+  });
+  updateKeyStatus('k-anthropic','ks-anthropic');
+  updateKeyStatus('k-gemini','ks-gemini');
+  updateKeyStatus('k-elevenlabs','ks-elevenlabs');
+  toast('✅ 설정 저장 완료!');
+}
+function updateKeyStatus(inputId, statusId) {
+  const val = document.getElementById(inputId).value.trim();
+  const el = document.getElementById(statusId);
+  if (!el) return;
+  if (val) { el.className='key-status ok'; el.textContent='✓ 키 입력됨'; }
+  else      { el.className='key-status no'; el.textContent='✗ 미입력'; }
+}
+function toggleEye(id, btn) {
+  const el = document.getElementById(id);
+  el.type = el.type === 'password' ? 'text' : 'password';
+  btn.textContent = el.type === 'password' ? '👁' : '🙈';
+}
+
+// ── 데이터 로드 ───────────────────────────────────────────────
+async function loadInputs() {
+  inputs = STANDALONE ? (typeof INPUTS !== 'undefined' ? INPUTS : []) : await api('/api/inputs');
+  const opts = inputs.map(f => `<option value="input/${f}">${f}</option>`).join('');
+  ['s0-src','s1-src','s2-src'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts || '<option>파일 없음</option>';
+  });
+}
+async function loadOutputs() {
+  outputs = STANDALONE ? (typeof DATA !== 'undefined' ? DATA : []) : await api('/api/outputs');
+  const el = document.getElementById('olist');
+  el.innerHTML = outputs.length
+    ? outputs.map((o,i) => {
+        const icons = (o.has_video ? '🎬' : '') + (o.youtube_url ? '📺' : '');
+        return `<div class="oitem${i===0?' sel':''}" onclick="selectOutput(${i})" id="oi${i}">${icons||'📄'} ${o.ts.replace(/_/,' ')}</div>`;
+      }).join('')
+    : '<div class="empty">생성된 파일 없음</div>';
+  const tsOpts = outputs.map(o => `<option value="${o.ts}">${o.ts}</option>`).join('');
+  ['s2-ts','s3-ts','s3a-ts','s4-ts','s5-ts','s6-ts','s7-ts'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = tsOpts || '<option>없음</option>';
+  });
+  if (outputs.length) selectOutput(0);
+}
+function selectOutput(i) {
+  curTs = outputs[i]?.ts;
+  document.querySelectorAll('.oitem').forEach((el,j) => el.classList.toggle('sel', j===i));
+  const d = outputs[i];
+  if (!d) return;
+  // Step 1 결과
+  if (d.title || d.script) {
+    document.getElementById('v1a').textContent = d.title || '';
+    document.getElementById('v1b').textContent = d.thumbnail || '';
+    document.getElementById('v1c').value = d.script || '';
+    document.getElementById('s1-result').classList.remove('hidden');
+  }
+  // Step 2 결과
+  if (d.prompts || d.guide) {
+    document.getElementById('v2a').innerHTML = renderPrompts(d.prompts||'');
+    document.getElementById('v2b').innerHTML = md(d.guide||'');
+    document.getElementById('v2c1').textContent = d.meta_title||'';
+    document.getElementById('v2c2').textContent = d.description||'';
+    document.getElementById('v2c3').textContent = d.tags||'';
+    document.getElementById('s2-result').classList.remove('hidden');
+  }
+  // Step 3
+  document.getElementById('s3-cards').innerHTML = renderPrompts(d.prompts||'') || '<div class="empty">Step 2 실행 후 나타납니다</div>';
+  // Step 4
+  document.getElementById('v4a').innerHTML = md(d.guide||'Step 2 실행 후 나타납니다');
+  document.getElementById('v4b').innerHTML = md(d.timeline||'');
+  // Step 5
+  if (d.blog) {
+    document.getElementById('v5').textContent = d.blog;
+    document.getElementById('s5-result').classList.remove('hidden');
+  }
+  // Step 6 상태 표시
+  const s6status = document.getElementById('s6-status');
+  if (s6status) {
+    const imgs = d.image_count || 0;
+    const hasVoice = d.script ? true : false;
+    s6status.textContent = `이미지 ${imgs}장${d.has_video ? ' · 영상 생성됨 ✅' : ''}`;
+  }
+  // Step 7 URL 표시
+  if (d.youtube_url) {
+    document.getElementById('v7-url').textContent = d.youtube_url;
+    document.getElementById('s7-result').classList.remove('hidden');
+  }
+  // 셀렉트 동기화
+  ['s2-ts','s3-ts','s3a-ts','s4-ts','s5-ts','s6-ts','s7-ts'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = curTs;
+  });
+}
+
+// ── 실행 함수 ─────────────────────────────────────────────────
+function _needServer() {
+  if (STANDALONE) { toast('⚠️ 플랫폼실행.bat 으로 서버를 먼저 시작하세요'); return true; }
+  return false;
+}
+
+async function runResearch() {
+  if (_needServer()) return;
+  const src = val('s0-src');
+  const {task_id} = await api('/api/run/research','POST',{source:src});
+  poll(task_id,'s0-log','s0-tag','s0-run', async () => {
+    const out = document.getElementById('s0-result');
+    out.textContent = getLogs(task_id);
+    out.classList.remove('hidden');
+  });
+}
+
+async function runWrite() {
+  if (_needServer()) return;
+  const src = val('s1-src');
+  const {task_id} = await api('/api/run/write','POST',{source:src});
+  poll(task_id,'s1-log','s1-tag','s1-run', async () => {
+    await loadOutputs();
+    document.getElementById('s1-result').classList.remove('hidden');
+    goPanel('p1', document.querySelector('[data-p="p1"]'));
+  });
+}
+
+async function runGenerate() {
+  if (_needServer()) return;
+  const ts    = val('s2-ts');
+  const src   = val('s2-src');
+  const short = document.getElementById('s2-short').checked;
+  const {task_id} = await api('/api/run/generate','POST',{ts,source:src,short});
+  poll(task_id,'s2-log','s2-tag','s2-run', async () => {
+    await loadOutputs();
+    document.getElementById('s2-result').classList.remove('hidden');
+  });
+}
+
+async function runImages() {
+  if (_needServer()) return;
+  const ts = val('s3a-ts');
+  if (!ts) { toast('❌ 출력 폴더를 선택하세요'); return; }
+  const {task_id} = await api('/api/run/images','POST',{ts});
+  poll(task_id,'s3a-log','s3a-tag','s3a-run', async () => {
+    await loadOutputs();
+    toast('✅ 이미지 생성 완료! Step 6에서 영상을 빌드하세요.');
+  });
+}
+
+async function runVideo() {
+  if (_needServer()) return;
+  const ts = val('s6-ts');
+  if (!ts) { toast('❌ 출력 폴더를 선택하세요'); return; }
+  const {task_id} = await api('/api/run/video','POST',{ts});
+  poll(task_id,'s6-log','s6-tag','s6-run', async () => {
+    await loadOutputs();
+    document.getElementById('v6-path').textContent = `output/${ts}/07_video/final_video.mp4`;
+    document.getElementById('s6-result').classList.remove('hidden');
+    toast('✅ 영상 빌드 완료!');
+  });
+}
+
+async function runUpload() {
+  if (_needServer()) return;
+  const ts      = val('s7-ts');
+  const privacy = val('s7-privacy');
+  if (!ts) { toast('❌ 출력 폴더를 선택하세요'); return; }
+  const {task_id} = await api('/api/run/upload','POST',{ts, privacy});
+  poll(task_id,'s7-log','s7-tag','s7-run', async () => {
+    await loadOutputs();
+    const found = outputs.find(o => o.ts === ts);
+    if (found?.youtube_url) {
+      document.getElementById('v7-url').textContent = found.youtube_url;
+      document.getElementById('s7-result').classList.remove('hidden');
+    }
+    toast('✅ YouTube 업로드 완료!');
+  });
+}
+
+async function runBlog() {
+  if (_needServer()) return;
+  const url = document.getElementById('s5-url').value.trim();
+  const ts  = val('s5-ts');
+  if (!url) { toast('❌ YouTube URL을 입력하세요'); return; }
+  const {task_id} = await api('/api/run/blog','POST',{url,ts});
+  poll(task_id,'s5-log','s5-tag','s5-run', async () => {
+    await loadOutputs();
+    document.getElementById('s5-result').classList.remove('hidden');
+  });
+}
+
+// ── 폴링 ──────────────────────────────────────────────────────
+const logCache = {};
+function getLogs(tid){ return logCache[tid] || ''; }
+
+function poll(tid, logId, tagId, btnId, onDone) {
+  const logEl = document.getElementById(logId);
+  const tagEl = document.getElementById(tagId);
+  const btn   = document.getElementById(btnId);
+  logEl.classList.remove('hidden');
+  logEl.textContent = '';
+  tagEl.className = 'tag tag-run';
+  tagEl.textContent = '⏳ 실행 중';
+  tagEl.classList.remove('hidden');
+  if (btn) btn.disabled = true;
+  if (pollTimers[tid]) clearInterval(pollTimers[tid]);
+  pollTimers[tid] = setInterval(async () => {
+    const d = await api(`/api/log/${tid}`);
+    logEl.textContent = d.output || '';
+    logCache[tid] = d.output || '';
+    logEl.scrollTop = logEl.scrollHeight;
+    if (d.status === 'done') {
+      clearInterval(pollTimers[tid]);
+      tagEl.className = 'tag tag-ok'; tagEl.textContent = '✅ 완료';
+      if (btn) btn.disabled = false;
+      onDone?.();
+    } else if (d.status === 'error') {
+      clearInterval(pollTimers[tid]);
+      tagEl.className = 'tag tag-err'; tagEl.textContent = '❌ 오류';
+      if (btn) btn.disabled = false;
+    }
+  }, 800);
+}
+
+// ── Step 3/4 선택 기반 로드 ───────────────────────────────────
+async function loadPrompts() {
+  const ts = val('s3-ts');
+  const found = outputs.find(o => o.ts === ts);
+  document.getElementById('s3-cards').innerHTML =
+    found?.prompts ? renderPrompts(found.prompts) : '<div class="empty">Step 2를 먼저 실행하세요</div>';
+}
+async function loadGuide() {
+  const ts = val('s4-ts');
+  const found = outputs.find(o => o.ts === ts);
+  document.getElementById('v4a').innerHTML = md(found?.guide || '가이드 없음');
+  document.getElementById('v4b').innerHTML = md(found?.timeline || '');
+}
+
+// ── 저장 ──────────────────────────────────────────────────────
+async function saveScript() {
+  if (!curTs) { toast('❌ 출력 폴더를 선택하세요'); return; }
+  const content = document.getElementById('v1c').value;
+  await api('/api/save','POST',{path:`output/${curTs}/00_script/script.txt`,content});
+  toast('💾 대본 저장 완료!');
+}
+
+// ── 유틸 ──────────────────────────────────────────────────────
+async function api(url, method='GET', body=null) {
+  const opts = {method, headers:{'Content-Type':'application/json'}};
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  return r.json();
+}
+function val(id) { const el=document.getElementById(id); return el?.value||''; }
+function toast(msg, dur=2500) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+function copyEl(id) {
+  const el=document.getElementById(id);
+  const txt = el.tagName==='TEXTAREA' ? el.value : el.textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 복사됨!'));
+}
+
+function renderPrompts(raw) {
+  const blocks = raw.split('---').map(b=>b.trim()).filter(Boolean);
+  if (!blocks.length) return '<div class="empty">프롬프트 없음</div>';
+  return blocks.map((b,i) => {
+    const ko = (b.match(/한글 설명:\s*(.+)/)||[])[1] || b.split('\n')[0];
+    const en = ((b.match(/영어 프롬프트:\s*([\s\S]+)/)||[])[1]||'').trim();
+    const safe = en.replace(/\\/g,'\\\\').replace(/`/g,"'");
+    return `<div class="pcard">
+      <div class="pnum">${i+1}</div>
+      <div class="pbody">
+        <div class="pko">${esc(ko)}</div>
+        <div class="pen">${esc(en)}</div>
+        <button class="btn-icon" onclick="cpText(this,\`${safe}\`)">📋 복사</button>
+      </div></div>`;
+  }).join('');
+}
+function cpText(btn,txt){
+  navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅';setTimeout(()=>btn.textContent='📋 복사',1800)});
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function md(s){
+  return esc(s||'')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^---$/gm,'<hr>')
+    .replace(/^\|(.+)\|$/gm,row=>'<tr>'+row.split('|').slice(1,-1).map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>')
+    .replace(/(<tr>[\s\S]*?<\/tr>)+/g,m=>`<table>${m}</table>`)
+    .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+}
+</script>
+</body>
+</html>
