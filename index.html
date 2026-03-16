@@ -41,13 +41,27 @@ body{font-family:'Noto Sans KR',system-ui,sans-serif;background:var(--bg);color:
 .hdr-btn{padding:.42rem 1rem;border-radius:8px;border:1.5px solid rgba(255,255,255,.3);background:rgba(255,255,255,.13);color:#fff;font-size:.8rem;cursor:pointer;transition:all .2s;font-weight:600;backdrop-filter:blur(4px)}
 .hdr-btn:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.6)}
 
-/* ── 레이아웃 ── */
-.wrap{flex:1;display:flex;max-width:1500px;margin:0 auto;width:100%;padding:1.5rem;gap:1.4rem}
+/* ── 상단 네비 ── */
+.topnav{background:#fff;border-bottom:1.5px solid var(--border);position:sticky;top:58px;z-index:150;box-shadow:0 2px 6px rgba(60,60,140,.06)}
+.topnav-in{max-width:1500px;margin:0 auto;padding:.3rem 1.5rem;display:flex;align-items:center;gap:.22rem;overflow-x:auto;scrollbar-width:none}
+.topnav-in::-webkit-scrollbar{display:none}
+.topnav .sbtn{width:auto;white-space:nowrap;padding:.44rem .82rem;flex-shrink:0}
+.topnav .snum{width:20px;height:20px;border-radius:6px;font-size:.65rem}
+.topnav .slabel{font-size:.79rem}
+.tn-div{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 .2rem}
+.tn-obox{position:relative;margin-left:auto;flex-shrink:0}
+.tn-obox-btn{padding:.44rem .85rem;border-radius:8px;border:1.5px solid var(--border);background:var(--surf2);color:var(--text2);font-size:.79rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.4rem;transition:all .18s;white-space:nowrap}
+.tn-obox-btn:hover{border-color:#9fa6d0;color:var(--accent)}
+.tn-obox-panel{position:absolute;top:calc(100% + 8px);right:0;width:220px;background:#fff;border:1.5px solid var(--border);border-radius:var(--r);box-shadow:var(--sh2);z-index:300;padding:.5rem;display:none;max-height:320px;overflow-y:auto}
+.tn-obox-panel.open{display:flex;flex-direction:column;gap:.2rem}
 
-/* ── 사이드바 ── */
-.sidebar{width:206px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem}
-.snav{display:flex;flex-direction:column;gap:.2rem;background:#fff;border-radius:var(--r);padding:.6rem;border:1.5px solid var(--border);box-shadow:var(--sh)}
-.sbtn{width:100%;background:transparent;border:1.5px solid transparent;border-radius:10px;padding:.62rem .9rem;display:flex;align-items:center;gap:.65rem;cursor:pointer;color:var(--text2);transition:all .18s;text-align:left}
+/* ── 레이아웃 ── */
+.wrap{flex:1;max-width:1500px;margin:0 auto;width:100%;padding:1.5rem}
+
+/* ── 사이드바 (숨김) ── */
+.sidebar{display:none}
+.snav{display:flex;flex-direction:column;gap:.2rem}
+.sbtn{width:auto;background:transparent;border:1.5px solid transparent;border-radius:10px;padding:.62rem .9rem;display:flex;align-items:center;gap:.65rem;cursor:pointer;color:var(--text2);transition:all .18s;text-align:left}
 .sbtn:hover{background:var(--surf2);border-color:var(--border);color:var(--text)}
 /* 기본 활성 */
 .sbtn.on{background:rgba(91,80,232,.1);border-color:rgba(91,80,232,.28);color:var(--cs)}
@@ -232,6 +246,10 @@ input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{bo
 .empty{text-align:center;padding:2rem;color:var(--text2);font-size:.88rem}
 .hidden{display:none!important}
 
+/* ── 푸터 ── */
+.footer{background:#fff;border-top:1.5px solid var(--border);padding:.65rem 1.5rem;text-align:center;font-size:.75rem;color:var(--text2);margin-top:auto}
+.footer a{color:var(--cs);text-decoration:none;font-weight:700}.footer a:hover{text-decoration:underline}
+
 /* ── 매뉴얼 ── */
 #pManual .card{border-top:3px solid #0f766e}
 #pManual .card-hdr{background:linear-gradient(135deg,rgba(15,118,110,.07),rgba(20,184,166,.03))}
@@ -289,50 +307,53 @@ input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{bo
   </div>
 </header>
 
-<div class="wrap">
-  <!-- 사이드바 -->
-  <aside class="sidebar">
-    <nav class="snav">
-      <button class="sbtn" data-p="pSettings" onclick="goSettings()">
-        <span class="snum">⚙</span><span class="slabel">API 설정</span>
-      </button>
-      <div class="sdiv"></div>
-      <button class="sbtn" data-p="p0" onclick="goPanel('p0',this)">
-        <span class="snum">0</span><span class="slabel">리서치</span>
-      </button>
-      <button class="sbtn" data-p="p1" onclick="goPanel('p1',this)">
-        <span class="snum">1</span><span class="slabel">대본 생성</span>
-      </button>
-      <button class="sbtn" data-p="p2" onclick="goPanel('p2',this)">
-        <span class="snum">2</span><span class="slabel">재료 생성</span>
-      </button>
-      <button class="sbtn" data-p="p3" onclick="goPanel('p3',this)">
-        <span class="snum">3</span><span class="slabel">이미지</span>
-      </button>
-      <button class="sbtn" data-p="p4" onclick="goPanel('p4',this)">
-        <span class="snum">4</span><span class="slabel">Vrew 편집</span>
-      </button>
-      <button class="sbtn" data-p="p5" onclick="goPanel('p5',this)">
-        <span class="snum">5</span><span class="slabel">블로그</span>
-      </button>
-      <div class="sdiv"></div>
-      <button class="sbtn" data-p="p6" onclick="goPanel('p6',this)">
-        <span class="snum">6</span><span class="slabel">영상 빌드</span>
-      </button>
-      <button class="sbtn" data-p="p7" onclick="goPanel('p7',this)">
-        <span class="snum">7</span><span class="slabel">YouTube 업로드</span>
-      </button>
-      <div class="sdiv"></div>
-      <button class="sbtn" data-p="pManual" onclick="goPanel('pManual',this)">
-        <span class="snum">📖</span><span class="slabel">매뉴얼</span>
-      </button>
-    </nav>
-    <div class="obox">
-      <div class="obox-t">📁 생성 목록</div>
-      <div class="olist" id="olist"><div class="empty">없음</div></div>
+<!-- 상단 네비 -->
+<nav class="topnav">
+  <div class="topnav-in">
+    <button class="sbtn" data-p="pSettings" onclick="goSettings()">
+      <span class="snum">⚙</span><span class="slabel">API 설정</span>
+    </button>
+    <div class="tn-div"></div>
+    <button class="sbtn" data-p="p0" onclick="goPanel('p0',this)">
+      <span class="snum">0</span><span class="slabel">리서치</span>
+    </button>
+    <button class="sbtn" data-p="p1" onclick="goPanel('p1',this)">
+      <span class="snum">1</span><span class="slabel">대본 생성</span>
+    </button>
+    <button class="sbtn" data-p="p2" onclick="goPanel('p2',this)">
+      <span class="snum">2</span><span class="slabel">재료 생성</span>
+    </button>
+    <button class="sbtn" data-p="p3" onclick="goPanel('p3',this)">
+      <span class="snum">3</span><span class="slabel">이미지</span>
+    </button>
+    <button class="sbtn" data-p="p4" onclick="goPanel('p4',this)">
+      <span class="snum">4</span><span class="slabel">Vrew 편집</span>
+    </button>
+    <button class="sbtn" data-p="p5" onclick="goPanel('p5',this)">
+      <span class="snum">5</span><span class="slabel">블로그</span>
+    </button>
+    <div class="tn-div"></div>
+    <button class="sbtn" data-p="p6" onclick="goPanel('p6',this)">
+      <span class="snum">6</span><span class="slabel">영상 빌드</span>
+    </button>
+    <button class="sbtn" data-p="p7" onclick="goPanel('p7',this)">
+      <span class="snum">7</span><span class="slabel">YouTube 업로드</span>
+    </button>
+    <div class="tn-div"></div>
+    <button class="sbtn" data-p="pManual" onclick="goPanel('pManual',this)">
+      <span class="snum">📖</span><span class="slabel">매뉴얼</span>
+    </button>
+    <div class="tn-obox">
+      <button class="tn-obox-btn" onclick="toggleOlist(this)">📁 생성 목록 ▾</button>
+      <div class="tn-obox-panel" id="olistPanel">
+        <div style="font-size:.72rem;font-weight:800;color:var(--cs);margin-bottom:.35rem;letter-spacing:.05em">📁 생성 목록</div>
+        <div class="olist" id="olist"><div class="empty">없음</div></div>
+      </div>
     </div>
-  </aside>
+  </div>
+</nav>
 
+<div class="wrap">
   <!-- 콘텐츠 -->
   <section class="content">
 
@@ -944,6 +965,12 @@ output/<br>
   </section>
 </div>
 
+<!-- 푸터 -->
+<footer class="footer">
+  YouTube 자동화 플랫폼 &nbsp;|&nbsp;
+  <a href="구조도_YouTube.html" target="_blank">📊 폴더 구조도</a>
+</footer>
+
 <script>
 const DATA = [
   {
@@ -1319,6 +1346,13 @@ function renderPrompts(raw) {
 function cpText(btn,txt){
   navigator.clipboard.writeText(txt).then(()=>{btn.textContent='✅';setTimeout(()=>btn.textContent='📋 복사',1800)});
 }
+function toggleOlist(btn) {
+  const panel = document.getElementById('olistPanel');
+  panel.classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.tn-obox')) document.getElementById('olistPanel')?.classList.remove('open');
+});
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function md(s){
   return esc(s||'')
